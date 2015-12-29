@@ -1,45 +1,67 @@
 #!/usr/local/cpanel/3rdparty/perl/514/bin/perl
-use LWP::UserAgent;
-use Time::HiRes;
-use Parallel::ForkManager;
-
 package DomainStatus;
-our $VERSION = 0.01;
+use strict;
+use warnings;
+our $VERSION = 0.02;
 
-sub getStatus {
-    use File::Slurp 'read_file';
-    my $pm = new Parallel::ForkManager(10);
-    our $fileName = "/etc/userdatadomains";
-    our @links    = read_file($fileName);
-    foreach my $uDomain (@links) {
-        if ( $uDomain =~ /(.*):[\s]/ ) {
-            my $url = $1;
-            $pm->start and next;    # do the fork
-            my $ua = LWP::UserAgent->new( agent => 'Mozilla/5.0' );
-            my $req        = HTTP::Request->new( GET => "http://$url" );
-            my $start      = [ Time::HiRes::gettimeofday() ];
-            my $res        = $ua->request($req);
-            my $difference = Time::HiRes::tv_interval($start);
-            my $body       = $res->decoded_content;
-            my $code       = $res->code();
-            my $head       = $res->headers()->as_string;
-            print $res->header("content-type\r\n\r\n");
+sub _get_http_status {
+    require LWP::UserAgent;
+    require Time::HiRes;
+    $Term::ANSIColor::AUTORESET = 1;
+    use Term::ANSIColor qw(:constants);
+    my $url        = "@_";
+    my $ua         = LWP::UserAgent->new( agent => 'Mozilla/5.0', timeout => '1' );
+    my $req        = HTTP::Request->new( GET => "http://$url" );
+    my $start      = [ Time::HiRes::gettimeofday() ];
+    my $res        = $ua->request( $req );
+    my $difference = Time::HiRes::tv_interval( $start );
+    my $body       = $res->decoded_content;
+    my $code       = $res->code();
+    my $head       = $res->headers()->as_string;
+    print $res->header( "content-type\r\n\r\n" );
+    my $bcode = ( BOLD BLUE $code );
 
-            if ( $head =~ /Client-Peer:[\s](.*):([0-9].*)/ ) {
-                my $head2 = "$1:$2";
-                printf( "%-40s IP:PORT=%-22s Status=%s ReqTime=%-5ss\r\n",
-                    $url, $head2, $code, $difference );
-            }
-            else {
-                printf("%s %-10s Couldn't Connect! $url, $code\n");
-                $pm->finish;
-                $pm->wait_all_children;
-            }
-            $pm->finish;
-            $pm->wait_all_children;
+    if ( $head =~ /Client-Peer:[\s](.*):([0-9].*)/ ) {
+        my $head2 = "$1:$2";
+        printf( "%-35s IP=%-22s Status=%s Time=%-5ss\r\n", $url, $head2, $bcode, $difference );
+    } else {
+        my $rcode = ( RED $code );
+        my $error = BOLD YELLOW "ERROR:\t!!!Connect Failed : $url : $rcode!!!";
+        print "$error\n";
+    }
+}
+
+sub _get_dns_data {
+    use lib '/usr/local/cpanel/3rdparty/perl/514/lib64/perl5/cpanel_lib/';
+    use IPC::System::Simple qw(system capture $EXITVAL);
+    $Term::ANSIColor::AUTORESET = 1;
+    use Term::ANSIColor qw(:constants);
+
+    my $domain     = "@_";
+    my $cmd        = "dig";
+    my @localArgs  = ( "\@localhost", "$domain", "A", "+short", "+tries=1" );
+    my @googleArgs = ( "\@8.8.8.8", "$domain", "A", "+short", "+tries=1" );
+
+    my @googleDNSA    = capture( $cmd, @googleArgs );
+    my $googleDNSR    = \@googleDNSA;
+    my $googleDNS     = $googleDNSR->[0];
+    my @localhostDNSA = capture( $cmd, @localArgs );
+    my $localhostDNSR = \@localhostDNSA;
+    my $localhostDNS  = $localhostDNSR->[0];
+    chomp( $googleDNS, $localhostDNS );
+
+    if ( ( $localhostDNS ) && ( $localhostDNS ne $googleDNS ) ) {
+        my $IPM1      = BOLD YELLOW "WARN: Local IP:";
+        my $IPM2      = BOLD YELLOW " doesn't match remote DNS ";
+        my $RlocalIP  = ( BOLD RED $localhostDNS );
+        my $RgoogleIP = ( BOLD RED $googleDNS );
+        print "$IPM1" . "$RlocalIP" . "$IPM2" . "$RgoogleIP\n";
+    } else {
+        if ( ( $localhostDNS ) && ( "$localhostDNS" eq "$googleDNS" ) ) {
+            print "DNS IP: $googleDNS : $domain\n";
+        } else {
+            print YELLOW "WARN: Something bad happened with our DNS request for $domain, DNS possibly not set.\n";
         }
     }
-    $pm->finish;
-    $pm->wait_all_children;
 }
 1
