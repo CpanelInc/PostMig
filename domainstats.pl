@@ -59,7 +59,7 @@ sub get_data {
 }
 
 
-#this is a wrapper sub to disable stderr because I can't porperly
+#this is a wrapper sub to disable stderr because I can't properly
 #prevent the "Not a CODE reference error when calling my subroutines
 #with a dynamic parameter((the domain)I *think* because the params anyway)
 sub supressERR($) {
@@ -71,3 +71,4 @@ sub supressERR($) {
 }
 
 supressERR( \&get_data );
+&DomainStatus::_get_mail_accounts();
