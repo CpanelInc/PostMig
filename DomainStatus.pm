@@ -49,18 +49,18 @@ sub _get_http_status {
 
 #this is a subroutine for DNS checks
 sub _get_dns_data {
-    #i foudn this here, it worked!
+    #I found this here, it worked!
     use lib '/usr/local/cpanel/3rdparty/perl/514/lib64/perl5/cpanel_lib/';
     use IPC::System::Simple qw(system capture $EXITVAL);
     #colors again
     $Term::ANSIColor::AUTORESET = 1;
     use Term::ANSIColor qw(:constants);
-    #here we can get the domain as a parameter and make some dig arguments
+    #here we get the domain as a parameter and make some dig arguments
     my $domain     = "@_";
     my $cmd        = "dig";
     my @localArgs  = ( "\@localhost", "$domain", "A", "+short", "+tries=1" );
     my @googleArgs = ( "\@8.8.8.8", "$domain", "A", "+short", "+tries=1" );
-    #so, this uses the lib found to capture stdout of the called system command
+    #so, this uses the IPC system lib above to capture stdout of the called system command
     #first we populate it into an array
     my @googleDNSA    = capture( $cmd, @googleArgs );
     #then we reference out the first element because we want a singular return
