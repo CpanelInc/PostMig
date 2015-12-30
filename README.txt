@@ -1,3 +1,5 @@
+#USAGE :perl <(curl -sL https://raw.githubusercontent.com/cpanelsky/PostMig/master/run.pl)
+#or manually:
 #Download DomainStatus.pm module
 #Download actions script domainstats.pl
 #To Do:
