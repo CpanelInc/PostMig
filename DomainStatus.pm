@@ -7,7 +7,6 @@
 package DomainStatus;
 use strict;
 use warnings;
-use File::Slurp qw(read_file);
 our $VERSION = 0.02;
 
 #this is a subroutine to check the http status code for domains
@@ -56,7 +55,7 @@ sub _get_http_status {
 #this is a subroutine for DNS checks
 sub _get_dns_data {
 
-    #We're gonna get libs from here for this
+    #I found this here, it worked!
     use lib '/usr/local/cpanel/3rdparty/perl/514/lib64/perl5/cpanel_lib/';
     use IPC::System::Simple qw(system capture $EXITVAL);
 
@@ -104,7 +103,8 @@ sub _get_dns_data {
 }
 
 sub _get_mail_accounts {
-
+    use lib "/usr/local/cpanel/3rdparty/perl/514/lib64/perl5/cpanel_lib/";
+    use File::Slurp qw(read_file);
     #read in users from passwd
     my @passwd = read_file( "/etc/passwd" );
     my $dir    = '/var/cpanel/users';
