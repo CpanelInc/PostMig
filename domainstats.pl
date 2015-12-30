@@ -121,7 +121,7 @@ sub _get_dns_data {
     #if the request is defined but doesn't match:
     if ( ( $localhostDNS ) && ( $localhostDNS ne $googleDNS ) ) {
         my $IPM1      = BOLD YELLOW "WARN: Local IP:";
-        my $IPM2      = BOLD YELLOW " doesn't match remote DNS";
+        my $IPM2      = BOLD YELLOW " doesn't match remote DNS ";
         my $RlocalIP  = ( BOLD RED $localhostDNS );
         my $RgoogleIP = ( BOLD RED $googleDNS );
         chomp($RlocalIP,$RgoogleIP);
