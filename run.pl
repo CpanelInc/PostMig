@@ -1,213 +1,220 @@
-#!/usr/local/cpanel/3rdparty/bin/perl
+#!/usr/local/cpanel/3rdparty/perl/514/bin/perl
+#use DomainStatus;
+package DomainStatus;
 
-use MIME::Base64;
- 
-#here's the base64 data for the script
-my $base64scriptFileData = <<EOF;
-IyEvdXNyL2xvY2FsL2NwYW5lbC8zcmRwYXJ0eS9wZXJsLzUxNC9iaW4vcGVybAp1c2UgRG9tYWlu
-U3RhdHVzOwp1c2UgRmlsZTo6U2x1cnAgJ3JlYWRfZmlsZSc7CnVzZSBGaWxlOjpTcGVjOwp1c2Ug
-c3RyaWN0Owp1c2Ugd2FybmluZ3M7CnVzZSBJUEM6Ok9wZW4zOwpvdXIgJGZpbGVOYW1lID0gIi9l
-dGMvdXNlcmRhdGFkb21haW5zIjsKb3VyIEBsaW5rcyAgICA9IHJlYWRfZmlsZSggJGZpbGVOYW1l
-ICk7CiRUZXJtOjpBTlNJQ29sb3I6OkFVVE9SRVNFVCA9IDE7CnVzZSBUZXJtOjpBTlNJQ29sb3Ig
-cXcoOmNvbnN0YW50cyk7CgpzdWIgZ2V0X2RhdGEgewogICRTSUd7J0lOVCd9ID0gc3ViIHsgcHJp
-bnQgIlxuQ2F1Z2h0IENUUkwrQyEuLi4iOyBwcmludCBSRVNFVCAiIC4uRW5kaW5nLi4uXG4iIDsg
-ZXhpdCA7IGRpZSA7IGtpbGwgSFVQID0+IC0kJDsgfTsgCiAgICBwcmludCAiXG5cdF9fX0NoZWNr
-aW5nIEhUVFAgcmVzcG9uc2UgY29kZXMgYW5kIEROUyBBIHJlY29yZHNfX19cblxuXHQoYmUgcGF0
-aWVudC4uKVxuXG4iOwogICAgZm9yZWFjaCBteSAkdURvbWFpbiAoIEBsaW5rcyApIHsKICAgICAg
-ICBpZiAoICR1RG9tYWluID1+IC8oLiopOltcc10vICkgewogICAgICAgICAgICBvdXIgJHJlc291
-cmNlID0gJDE7CiAgICAgICAgICAgIGV2YWwgewogICAgICAgICAgICAgICAgbG9jYWwgKCAqSElT
-X09VVCwgKkhJU19FUlIgKTsKICAgICAgICAgICAgICAgIG15ICRjaGlsZHBpZCA9CiAgICAgICAg
-ICAgICAgICAgICAgb3BlbjMoIHVuZGVmLCAqSElTX09VVCwgKkhJU19FUlIsIFwmRG9tYWluU3Rh
-dHVzOjpfZ2V0X2h0dHBfc3RhdHVzKCAiJHJlc291cmNlIiApLCB1bmRlZiApOwogICAgICAgICAg
-ICAgICAgbXkgQG91dGxpbmVzID0gPEhJU19PVVQ+OyAgICAgICAgICAKICAgICAgICAgICAgICAg
-IG15IEBlcnJsaW5lcyA9IDxISVNfRVJSPjsgICAgICAgICAgCiAgICAgICAgICAgICAgICBwcmlu
-dCAiU1RET1VUOlxuIiwgQG91dGxpbmVzLCAiXG4iOwogICAgICAgICAgICAgICAgcHJpbnQgIlNU
-REVSUjpcbiIsIEBlcnJsaW5lcywgIlxuIjsKICAgICAgICAgICAgICAgIGNsb3NlIEhJU19PVVQ7
-CiAgICAgICAgICAgICAgICBjbG9zZSBISVNfRVJSOwogICAgICAgICAgICAgICAgd2FpdHBpZCgg
-JGNoaWxkcGlkLCAwICk7CiAgICAgICAgICAgICAgICBpZiAoICQ/ICkgewogICAgICAgICAgICAg
-ICAgICAgIHByaW50ICJDaGlsZCBleGl0ZWQgd2l0aCB3YWl0IHN0YXR1cyBvZiAkP1xuIjsKICAg
-ICAgICAgICAgICAgIH0KICAgICAgICAgICAgfTsKICAgICAgICAgICAgZXZhbCB7CiAgICAgICAg
-ICAgICAgICBsb2NhbCAoICpISVNfT1VUMiwgKkhJU19FUlIyICk7CiAgICAgICAgICAgICAgICBt
-eSAkY2hpbGRwaWQyID0KICAgICAgICAgICAgICAgICAgICBvcGVuMyggdW5kZWYsICpISVNfT1VU
-MiwgKkhJU19FUlIyLCBcJkRvbWFpblN0YXR1czo6X2dldF9kbnNfZGF0YSggIiRyZXNvdXJjZSIg
-KSwgdW5kZWYgKTsKICAgICAgICAgICAgICAgIG15IEBvdXRsaW5lczIgPSA8SElTX09VVDI+Owog
-ICAgICAgICAgICAgICAgbXkgQGVycmxpbmVzMiA9IDxISVNfRVJSMj47CiAgICAgICAgICAgICAg
-ICBwcmludCAiU1RET1VUOlxuIiwgQG91dGxpbmVzMiwgIlxuIjsKICAgICAgICAgICAgICAgIHBy
-aW50ICJTVERFUlI6XG4iLCBAZXJybGluZXMyLCAiXG4iOwogICAgICAgICAgICAgICAgY2xvc2Ug
-SElTX09VVDI7CiAgICAgICAgICAgICAgICBjbG9zZSBISVNfRVJSMjsKICAgICAgICAgICAgICAg
-IHdhaXRwaWQoICRjaGlsZHBpZDIsIDAgKTsKCiAgICAgICAgICAgICAgICBpZiAoICQ/ICkgewog
-ICAgICAgICAgICAgICAgICAgIHByaW50ICJDaGlsZCBleGl0ZWQgd2l0aCB3YWl0IHN0YXR1cyBv
-ZiAkP1xuIjsKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgfTsKICAgICAgICB9IGVsc2Ug
-ewogICAgICAgICAgICBwcmludCBZRUxMT1cgIlBvc3NpYmxlIGJhZCBEb21haW4gZGF0YSBlbm91
-bnRlcmVkLCBtYW51YWxseSBjaGVjayAvZXRjL3VzZXJkYXRhZG9tYWlucyBmaWxlIGFmdGVyIGZp
-bmlzaGVkLlxuIjsKICAgICAgICB9CiAgICB9Cn0KCnN1YiBzaG93TWFpbEFjY291bnRzIHsKICAg
-IHByaW50ICJcblxuXHRfX19NYWlsIGFjY291bnRzIGZvdW5kOl9fX1xuXG4iOwogICAgJkRvbWFp
-blN0YXR1czo6X2dldF9tYWlsX2FjY291bnRzKCk7Cn0KCnN1YiBzdXByZXNzRVJSKCQpIHsKICAg
-IG9wZW4gbXkgJHNhdmVvdXQsICI+JlNUREVSUiI7CiAgICBvcGVuIFNUREVSUiwgJz4nLCBGaWxl
-OjpTcGVjLT5kZXZudWxsKCk7CiAgICBteSAkZnVuYyA9ICRfWzBdOwogICAgJGZ1bmMtPigpOwog
-ICAgb3BlbiBTVERFUlIsICI+JiIsICRzYXZlb3V0Owp9Cgomc3VwcmVzc0VSUiggXCZnZXRfZGF0
-YSApOwomc2hvd01haWxBY2NvdW50cygpOwo=
-EOF
+use File::Slurp 'read_file';
+use File::Spec;
+use strict;
+use warnings;
+use IPC::Open3;
+our $fileName = "/etc/userdatadomains";
+our @links    = read_file( $fileName );
+$Term::ANSIColor::AUTORESET = 1;
+use Term::ANSIColor qw(:constants);
+our $VERSION = 0.02;
 
-#here's the base64 data for the module
-my $base64modulesFileData = <<EOF;
-IyEvdXNyL2xvY2FsL2NwYW5lbC8zcmRwYXJ0eS9wZXJsLzUxNC9iaW4vcGVybAojIGNwYW5lbAkJ
-CQkgICAgICAgICAgIENvcHlyaWdodChjKSAyMDE1IGNQYW5lbCwgSW5jLgojICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBBbGwgcmlnaHRz
-IFJlc2VydmVkLgojIGNvcHlyaWdodEBjcGFuZWwubmV0ICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICBodHRwOi8vY3BhbmVsLm5ldAojIFRoaXMgY29kZSBpcyBzdWJqZWN0
-IHRvIHRoZSBjUGFuZWwgbGljZW5zZS4gVW5hdXRob3JpemVkIGNvcHlpbmcgaXMgcHJvaGliaXRl
-ZAoKcGFja2FnZSBEb21haW5TdGF0dXM7CnVzZSBzdHJpY3Q7CnVzZSB3YXJuaW5nczsKb3VyICRW
-RVJTSU9OID0gMC4wMjsKCiN0aGlzIGlzIGEgc3Vicm91dGluZSB0byBjaGVjayB0aGUgaHR0cCBz
-dGF0dXMgY29kZSBmb3IgZG9tYWlucwpzdWIgX2dldF9odHRwX3N0YXR1cyB7CgogICAgI3dlIHVz
-ZSBsd3AvdGltZS9hbnNpIGZvciBvdXRwdXQvY29tbWFuZHMKICAgIHJlcXVpcmUgTFdQOjpVc2Vy
-QWdlbnQ7CiAgICByZXF1aXJlIFRpbWU6OkhpUmVzOwogICAgJFRlcm06OkFOU0lDb2xvcjo6QVVU
-T1JFU0VUID0gMTsKICAgIHVzZSBUZXJtOjpBTlNJQ29sb3IgcXcoOmNvbnN0YW50cyk7CgogICAg
-I291ciBVUkwgc2hvdWxkIGNvbWUgaW4gYXMgYW4gYXJndW1lbnQgdG8gdGhlIHN1YnJvdXRpbmUK
-ICAgIG15ICR1cmwgPSAiQF8iOwoKICAgICN3ZSBoYXZlIGEgYmFzaWMgYnJvd3NlciBhZ2VudCBh
-bmQgYSBsb3cgdGltZW91dCBmb3Igbm93LCBoZXJlJ3MgdGhlIHJlcXVlc3QgZm9yIHRoZSBVUkwK
-ICAgIG15ICR1YSA9IExXUDo6VXNlckFnZW50LT5uZXcoIGFnZW50ID0+ICdNb3ppbGxhLzUuMCcs
-IHRpbWVvdXQgPT4gJzEnICk7CiAgICBteSAkcmVxID0gSFRUUDo6UmVxdWVzdC0+bmV3KCBHRVQg
-PT4gImh0dHA6Ly8kdXJsIiApOwogICAgbXkgJHJlcyA9ICR1YS0+cmVxdWVzdCggJHJlcSApOwoK
-ICAgICN3ZSBjYW4gcGFyc2UgdGhpcyBmb3IgZ29vZGllcy9lcnJvcnMKICAgIG15ICRib2R5ID0g
-JHJlcy0+ZGVjb2RlZF9jb250ZW50OwoKICAgICN0aGlzIGlzIHRoZSBzdGF0dXMgY29kZQogICAg
-bXkgJGNvZGUgPSAkcmVzLT5jb2RlKCk7CgogICAgI3dlIGNhbiBlYXNpbHkgY2hlY2sgdGhlIGhl
-YWRlcnMgdG8gZGV0ZXJtaW5lIGlmIHdlIGhhZCBhIGdvb2QgcmVxdWVzdCBhcyBiZWxvdwogICAg
-bXkgJGhlYWQgPSAkcmVzLT5oZWFkZXJzKCktPmFzX3N0cmluZzsKICAgIHByaW50ICRyZXMtPmhl
-YWRlciggImNvbnRlbnQtdHlwZVxyXG5cclxuIiApOwoKICAgICNibHVlIHNlZW1zIGxpa2UgYSBn
-b29kIGNvbG9yIGZvciByZXF1ZXN0cyB0aGF0IHByb2Nlc3MoZm9yIG5vdykKICAgIG15ICRiY29k
-ZSA9ICggQk9MRCBCTFVFICRjb2RlICk7CiAgICBpZiAoICRoZWFkID1+IC9DbGllbnQtUGVlcjpb
-XHNdKC4qKTooWzAtOV0uKikvICkgewogICAgICAgIG15ICRoZWFkMiA9ICIkMTokMiI7CgogICAg
-ICAgICNoZXJlJ3Mgc29tZSB0ZXJyaWJsZSBmb3JtYXR0aW5nLCBuZWVkcyBpbXByb3ZlbWVudAog
-ICAgICAgIHByaW50ZiggIiUtMzBzIElQPSUtMTVzIFN0YXR1cz0lcyAgIiwgJHVybCwgJGhlYWQy
-LCAkYmNvZGUgKTsKICAgIH0gZWxzZSB7CgogICAgICAgICNpZiB3ZSBkaWRuJ3Qgc2VlIGEgbm9y
-bWFsIGhlYWRlciwgbGV0J3MgcHJpbnQgdGhlIGNvZGUgcmVkIHdpdGggeWVsbG93IHdhcm5pbmdz
-CiAgICAgICAgbXkgJHJjb2RlID0gKCBSRUQgJGNvZGUgKTsKICAgICAgICBteSAkZXJyb3IgPSBC
-T0xEIFlFTExPVyAiRVJST1I6XHQhISFDb25uZWN0IEZhaWxlZCA6ICR1cmwgOiAkcmNvZGUhISEg
-IjsKICAgICAgICBwcmludCAiJGVycm9yIjsKICAgIH0KfQoKI3RoaXMgaXMgYSBzdWJyb3V0aW5l
-IGZvciBETlMgY2hlY2tzCnN1YiBfZ2V0X2Ruc19kYXRhIHsKCiAgICAjSSBmb3VuZCB0aGlzIGhl
-cmUsIGl0IHdvcmtlZCEKICAgIHVzZSBsaWIgJy91c3IvbG9jYWwvY3BhbmVsLzNyZHBhcnR5L3Bl
-cmwvNTE0L2xpYjY0L3Blcmw1L2NwYW5lbF9saWIvJzsKICAgIHVzZSBJUEM6OlN5c3RlbTo6U2lt
-cGxlIHF3KHN5c3RlbSBjYXB0dXJlICRFWElUVkFMKTsKCiAgICAjY29sb3JzIGFnYWluCiAgICAk
-VGVybTo6QU5TSUNvbG9yOjpBVVRPUkVTRVQgPSAxOwogICAgdXNlIFRlcm06OkFOU0lDb2xvciBx
-dyg6Y29uc3RhbnRzKTsKCiAgICAjaGVyZSB3ZSBjYW4gZ2V0IHRoZSBkb21haW4gYXMgYSBwYXJh
-bWV0ZXIgYW5kIG1ha2Ugc29tZSBkaWcgYXJndW1lbnRzCiAgICBteSAkZG9tYWluICAgICA9ICJA
-XyI7CiAgICBteSAkY21kICAgICAgICA9ICJkaWciOwogICAgbXkgQGxvY2FsQXJncyAgPSAoICJc
-QGxvY2FsaG9zdCIsICIkZG9tYWluIiwgIkEiLCAiK3Nob3J0IiwgIit0cmllcz0xIiApOwogICAg
-bXkgQGdvb2dsZUFyZ3MgPSAoICJcQDguOC44LjgiLCAiJGRvbWFpbiIsICJBIiwgIitzaG9ydCIs
-ICIrdHJpZXM9MSIgKTsKCiAgICAjc28sIHRoaXMgdXNlcyB0aGUgbGliIGZvdW5kIHRvIGNhcHR1
-cmUgc3Rkb3V0IG9mIHRoZSBjYWxsZWQgc3lzdGVtIGNvbW1hbmQKICAgICNmaXJzdCB3ZSBwb3B1
-bGF0ZSBpdCBpbnRvIGFuIGFycmF5CiAgICBteSBAZ29vZ2xlRE5TQSA9IGNhcHR1cmUoICRjbWQs
-IEBnb29nbGVBcmdzICk7CgogICAgI3RoZW4gd2UgcmVmZXJlbmNlIG91dCB0aGUgZmlyc3QgZWxl
-bWVudCBiZWNhdXNlIHdlIHdhbnQgYSBzaW5ndWxhciByZXR1cm4KICAgICN0aGVuIHdlIGRvIHRo
-ZSBzYW1lIGZvciBsb2NhbGhvc3QgcmVxdWVzdHMKICAgIG15ICRnb29nbGVETlNSICAgID0gXEBn
-b29nbGVETlNBOwogICAgbXkgJGdvb2dsZUROUyAgICAgPSAkZ29vZ2xlRE5TUi0+WzBdOwogICAg
-bXkgQGxvY2FsaG9zdEROU0EgPSBjYXB0dXJlKCAkY21kLCBAbG9jYWxBcmdzICk7CiAgICBteSAk
-bG9jYWxob3N0RE5TUiA9IFxAbG9jYWxob3N0RE5TQTsKICAgIG15ICRsb2NhbGhvc3RETlMgID0g
-JGxvY2FsaG9zdEROU1ItPlswXTsKICAgIGNob21wKCAkZ29vZ2xlRE5TLCAkbG9jYWxob3N0RE5T
-ICk7CgogICAgI2lmIHRoZSByZXF1ZXN0IGlzIGRlZmluZWQgYnV0IGRvZXNuJ3QgbWF0Y2g6CiAg
-ICBpZiAoICggJGxvY2FsaG9zdEROUyApICYmICggJGxvY2FsaG9zdEROUyBuZSAkZ29vZ2xlRE5T
-ICkgKSB7CiAgICAgICAgbXkgJElQTTEgICAgICA9IEJPTEQgWUVMTE9XICJXQVJOOiBMb2NhbCBJ
-UDoiOwogICAgICAgIG15ICRJUE0yICAgICAgPSBCT0xEIFlFTExPVyAiIGRvZXNuJ3QgbWF0Y2gg
-cmVtb3RlIEROUyAiOwogICAgICAgIG15ICRSbG9jYWxJUCAgPSAoIEJPTEQgUkVEICRsb2NhbGhv
-c3RETlMgKTsKICAgICAgICBteSAkUmdvb2dsZUlQID0gKCBCT0xEIFJFRCAkZ29vZ2xlRE5TICk7
-CiAgICAgICAgcHJpbnQgIiRJUE0xIiAuICIkUmxvY2FsSVAiIC4gIiRJUE0yIiAuICIkUmdvb2ds
-ZUlQXG4iOwogICAgfSBlbHNlIHsKCiAgICAgICAgI2lmIGl0J3MgZGVmaW5lZCBhbmQgbWF0Y2hl
-cywgd2UgZG8gYSBub3JtYWwgdGhpbmc6CiAgICAgICAgaWYgKCAoICRsb2NhbGhvc3RETlMgKSAm
-JiAoICIkbG9jYWxob3N0RE5TIiBlcSAiJGdvb2dsZUROUyIgKSApIHsKICAgICAgICAgICAgcHJp
-bnQgIkROUyBJUDogJGdvb2dsZUROUyA6ICRkb21haW5cbiI7CiAgICAgICAgfSBlbHNlIHsKCiAg
-ICAgICAgICAgICNlbHNlIHByaW50IHllbGxvdyB3YXJuaW5nIGlmIG5vdGhpbmcgd2FzIHJldHVy
-bmVkCiAgICAgICAgICAgIHByaW50IFlFTExPVyAiV0FSTjogU29tZXRoaW5nIGhhcHBlbmVkIHRv
-IEROUyByZXF1ZXN0cyBmb3IgJGRvbWFpbiwgaXMgRE5TIHNldD9cbiI7CiAgICAgICAgfQogICAg
-fQp9CgpzdWIgX2dldF9tYWlsX2FjY291bnRzIHsKICAgIHVzZSBsaWIgIi91c3IvbG9jYWwvY3Bh
-bmVsLzNyZHBhcnR5L3BlcmwvNTE0L2xpYjY0L3Blcmw1L2NwYW5lbF9saWIvIjsKICAgIHVzZSBG
-aWxlOjpTbHVycCBxdyhyZWFkX2ZpbGUpOwogICAgI3JlYWQgaW4gdXNlcnMgZnJvbSBwYXNzd2QK
-ICAgIG15IEBwYXNzd2QgPSByZWFkX2ZpbGUoICIvZXRjL3Bhc3N3ZCIgKTsKICAgIG15ICRkaXIg
-ICAgPSAnL3Zhci9jcGFuZWwvdXNlcnMnOwogICAgbXkgJXVzZXJfbGlzdDsKCiAgICBvcGVuZGly
-KCBESVIsICRkaXIgKSBvciBkaWUgJCE7CiAgICB3aGlsZSAoIG15ICRmaWxlID0gcmVhZGRpcigg
-RElSICkgKSB7CiAgICAgICAgbmV4dCBpZiAoICRmaWxlID1+IG0vXlwuLyApOwogICAgICAgIGZv
-cmVhY2ggbXkgJGxpbmUgKCBAcGFzc3dkICkgewoKICAgICAgICAgICAgI2lmIHdlIGxvb2sgbGlr
-ZSBhIHN5c3RlbSBhbmQgY3BhbmVsIHVzZXI/CiAgICAgICAgICAgIGlmICggJGxpbmUgPX4gL14k
-ZmlsZTpbXjpdKjpbXjpdKjpbXjpdKjpbXjpdKjooW2EtejAtOV9cL10rKTouKi8gKSB7CiAgICAg
-ICAgICAgICAgICAkdXNlcl9saXN0eyRmaWxlfSA9ICQxOwogICAgICAgICAgICB9CiAgICAgICAg
-fQogICAgfQogICAgY2xvc2VkaXIoIERJUiApOwoKICAgICNmb3IgdGhlIHVzZXJzIGZvdW5kLCBp
-ZiB3ZSBhcmVuJ3Qgcm9vdCBsb29rIGZvciBhbiBldGMgZGlyCiAgICBmb3JlYWNoIG15ICR1c2Vy
-ICgga2V5cyAldXNlcl9saXN0ICkgewogICAgICAgIGlmICggJHVzZXIgbmUgInJvb3QiICkgewog
-ICAgICAgICAgICBvcGVuZGlyKCBFVEMsICIkdXNlcl9saXN0eyR1c2VyfS9ldGMiICkgfHwgd2Fy
-biAkISAuICIkdXNlcl9saXN0eyR1c2VyfS9ldGMiOwogICAgICAgICAgICBteSAkcGF0aCA9ICR1
-c2VyX2xpc3R7JHVzZXJ9OwoKICAgICAgICAgICAgI2ZvciB0aGUgZG9tYWlucyBmb3VuZCBpbiB0
-aGUgdXNlcnMgZXRjIGRpcgogICAgICAgICAgICB3aGlsZSAoIG15ICRkb21haW4gPSByZWFkZGly
-KCBFVEMgKSApIHsKICAgICAgICAgICAgICAgIG5leHQgaWYgJGRvbWFpbiA9fiAvXlwuLzsgICAj
-IHNraXAgLiBhbmQgLi4gZGlycwogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICNzZWUgaWYgd2UgYXJlIGEgdmFsaWQgZXRjIGRvbWFpbiBhbmQgaWYgc28sIGxvb2sg
-Zm9yIG1haWwgdXNlcnMgYW5kIHByaW50CiAgICAgICAgICAgICAgICBpZiAoIC1kICIkcGF0aC9l
-dGMvJGRvbWFpbi8iICkgewogICAgICAgICAgICAgICAgICAgIG9wZW4oIFBBU1NXRCwgIiRwYXRo
-L2V0Yy8kZG9tYWluL3Bhc3N3ZCIgKSB8fCBkaWUgJCEgLiAiL2hvbWUvJHVzZXIvZXRjLyRkb21h
-aW4vcGFzc3dkIjsKICAgICAgICAgICAgICAgICAgICB3aGlsZSAoIG15ICRQV0xJTkUgPSA8UEFT
-U1dEPiApIHsKICAgICAgICAgICAgICAgICAgICAgICAgJFBXTElORSA9fiBzLzouKi8vOyAgICAj
-IG9ubHkgc2hvdyBsaW5lIGRhdGEgYmVmb3JlIGZpcnN0IGNvbG9uICh1c2VybmFtZSBvbmx5KQog
-ICAgICAgICAgICAgICAgICAgICAgICBjaG9tcCggJHVzZXIsICRkb21haW4sICRQV0xJTkUgKTsK
-ICAgICAgICAgICAgICAgICAgICAgICAgbXkgJFBXTElORUQgPSAiJFBXTElORVxAJGRvbWFpbiI7
-CiAgICAgICAgICAgICAgICAgICAgICAgIGNob21wKCAkUFdMSU5FRCApOwogICAgICAgICAgICAg
-ICAgICAgICAgICBwcmludGYoICJVc2VyPSUtMTBzIERvbWFpbj0lLTM1cyBFbWFpbD0lc1xuIiwg
-JHVzZXIsICRkb21haW4sICRQV0xJTkVEICk7CiAgICAgICAgICAgICAgICAgICAgfQogICAgICAg
-ICAgICAgICAgICAgIGNsb3NlKCBQQVNTV0QgKTsKICAgICAgICAgICAgICAgIH0KICAgICAgICAg
-ICAgfQogICAgICAgIH0KICAgICAgICBjbG9zZSggRVRDICk7CiAgICB9Cn0KCjEK
-EOF
+ &supressERR( \&get_data );
+ &showMailAccounts();
 
 
-#we need to turn the payload into plain text
-my $decodedScript = decode_base64($base64scriptFileData);
-my $decodedModule = decode_base64($base64modulesFileData);
+sub get_data {
+  $SIG{'INT'} = sub { print "\nCaught CTRL+C!..."; print RESET " ..Ending...\n" ; exit ; die ; kill HUP => -$$; }; 
+    print "\n\t___Checking HTTP response codes and DNS A records___\n\n\t(be patient..)\n\n";
+    foreach my $uDomain ( @links ) {
+        if ( $uDomain =~ /(.*):[\s]/ ) {
+            our $resource = $1;
+            eval {
+                local ( *HIS_OUT, *HIS_ERR );
+                my $childpid =
+                    open3( undef, *HIS_OUT, *HIS_ERR, \&DomainStatus::_get_http_status( "$resource" ), undef );
+                my @outlines = <HIS_OUT>;          
+                my @errlines = <HIS_ERR>;          
+                print "STDOUT:\n", @outlines, "\n";
+                print "STDERR:\n", @errlines, "\n";
+                close HIS_OUT;
+                close HIS_ERR;
+                waitpid( $childpid, 0 );
+                if ( $? ) {
+                    print "Child exited with wait status of $?\n";
+                }
+            };
+            eval {
+                local ( *HIS_OUT2, *HIS_ERR2 );
+                my $childpid2 =
+                    open3( undef, *HIS_OUT2, *HIS_ERR2, \&DomainStatus::_get_dns_data( "$resource" ), undef );
+                my @outlines2 = <HIS_OUT2>;
+                my @errlines2 = <HIS_ERR2>;
+                print "STDOUT:\n", @outlines2, "\n";
+                print "STDERR:\n", @errlines2, "\n";
+                close HIS_OUT2;
+                close HIS_ERR2;
+                waitpid( $childpid2, 0 );
 
-#create the module
-sub createModule {
-      my $modfilename = 'DomainStatus.pm';
-      open(my $fh1, '>', $modfilename) or die "Could not open file '$fmodfilename' $!";
-      print $fh1 "$decodedModule";
-      close $fh1;
-}
- 
-#create the script 
-sub createScript {
-     my $scriptfilename = 'domainstats.pl';
-     open(my $fh2, '>', $scriptfilename) or die "Could not open file '$scriptfilename' $!";
-     print $fh2 "$decodedScript";
-     close $fh2;
-}
-
-
-#here we see if we already have a script and module from the PWD
-sub pmCheck {
-    my $workingdir = $ENV{'PWD'};
-    my $moduleFile = "$workingdir/DomainStatus.pm";
-    my $scriptFile = "$workingdir/domainstats.pl";
- 
- #use previous files found or make new ones if none available
-     if ( -f $moduleFile ) {
-     print "\n$moduleFile exists, using previous module.\n";
-    } else {
-     &createModule();
-     print "\nNo $moduleFile found, created it.\n";
-     }
- 
-    if ( -f $scriptFile ) {
-    print "$scriptFile exists, using previous script.\n";
-    }  else {
-    &createScript();
-    print "No $scriptFile found, created it.\n";
+                if ( $? ) {
+                    print "Child exited with wait status of $?\n";
+                }
+            };
+        } else {
+            print YELLOW "Possible bad Domain data enountered, manually check /etc/userdatadomains file after finished.\n";
+        }
     }
 }
 
-#wait a second, then execute
-sub execScript {
-    sleep(1);
-    use lib '/usr/local/cpanel/3rdparty/perl/514/lib64/perl5/cpanel_lib/';
-    use IPC::System::Simple qw(system capture $EXITVAL);
-    system("perl domainstats.pl");
-    print "\n";
+sub showMailAccounts {
+    print "\n\n\t___Mail accounts found:___\n\n";
+    &DomainStatus::_get_mail_accounts();
 }
 
-#call our routines
-&pmCheck();
-&execScript();
+sub supressERR($) {
+    open my $saveout, ">&STDERR";
+    open STDERR, '>', File::Spec->devnull();
+    my $func = $_[0];
+    $func->();
+    open STDERR, ">&", $saveout;
+}
+
+#&supressERR( \&get_data );
+#&showMailAccounts();
+
+
+
+#this is a subroutine to check the http status code for domains
+sub _get_http_status {
+
+    #we use lwp/time/ansi for output/commands
+    require LWP::UserAgent;
+    require Time::HiRes;
+    $Term::ANSIColor::AUTORESET = 1;
+    use Term::ANSIColor qw(:constants);
+
+    #our URL should come in as an argument to the subroutine
+    my $url = "@_";
+
+    #we have a basic browser agent and a low timeout for now, here's the request for the URL
+    my $ua = LWP::UserAgent->new( agent => 'Mozilla/5.0', timeout => '1' );
+    my $req = HTTP::Request->new( GET => "http://$url" );
+    my $res = $ua->request( $req );
+
+    #we can parse this for goodies/errors
+    my $body = $res->decoded_content;
+
+    #this is the status code
+    my $code = $res->code();
+
+    #we can easily check the headers to determine if we had a good request as below
+    my $head = $res->headers()->as_string;
+    print $res->header( "content-type\r\n\r\n" );
+
+    #blue seems like a good color for requests that process(for now)
+    my $bcode = ( BOLD BLUE $code );
+    if ( $head =~ /Client-Peer:[\s](.*):([0-9].*)/ ) {
+        my $head2 = "$1:$2";
+
+        #here's some terrible formatting, needs improvement
+        printf( "%-30s IP=%-15s Status=%s  ", $url, $head2, $bcode );
+    } else {
+
+        #if we didn't see a normal header, let's print the code red with yellow warnings
+        my $rcode = ( RED $code );
+        my $error = BOLD YELLOW "ERROR:\t!!!Connect Failed : $url : $rcode!!! ";
+        print "$error";
+    }
+}
+
+#this is a subroutine for DNS checks
+sub _get_dns_data {
+
+    #I found this here, it worked!
+    use lib '/usr/local/cpanel/3rdparty/perl/514/lib64/perl5/cpanel_lib/';
+    use IPC::System::Simple qw(system capture $EXITVAL);
+
+    #colors again
+    $Term::ANSIColor::AUTORESET = 1;
+    use Term::ANSIColor qw(:constants);
+
+    #here we can get the domain as a parameter and make some dig arguments
+    my $domain     = "@_";
+    my $cmd        = "dig";
+    my @localArgs  = ( "\@localhost", "$domain", "A", "+short", "+tries=1" );
+    my @googleArgs = ( "\@8.8.8.8", "$domain", "A", "+short", "+tries=1" );
+
+    #so, this uses the lib found to capture stdout of the called system command
+    #first we populate it into an array
+    my @googleDNSA = capture( $cmd, @googleArgs );
+
+    #then we reference out the first element because we want a singular return
+    #then we do the same for localhost requests
+    my $googleDNSR    = \@googleDNSA;
+    my $googleDNS     = $googleDNSR->[0];
+    my @localhostDNSA = capture( $cmd, @localArgs );
+    my $localhostDNSR = \@localhostDNSA;
+    my $localhostDNS  = $localhostDNSR->[0];
+    chomp( $googleDNS, $localhostDNS );
+
+    #if the request is defined but doesn't match:
+    if ( ( $localhostDNS ) && ( $localhostDNS ne $googleDNS ) ) {
+        my $IPM1      = BOLD YELLOW "WARN: Local IP:";
+        my $IPM2      = BOLD YELLOW " doesn't match remote DNS ";
+        my $RlocalIP  = ( BOLD RED $localhostDNS );
+        my $RgoogleIP = ( BOLD RED $googleDNS );
+        print "$IPM1" . "$RlocalIP" . "$IPM2" . "$RgoogleIP\n";
+    } else {
+
+        #if it's defined and matches, we do a normal thing:
+        if ( ( $localhostDNS ) && ( "$localhostDNS" eq "$googleDNS" ) ) {
+            print "DNS IP: $googleDNS : $domain\n";
+        } else {
+
+            #else print yellow warning if nothing was returned
+            print YELLOW "WARN: Something happened to DNS requests for $domain, is DNS set?\n";
+        }
+    }
+}
+
+sub _get_mail_accounts {
+    use lib "/usr/local/cpanel/3rdparty/perl/514/lib64/perl5/cpanel_lib/";
+    use File::Slurp qw(read_file);
+    #read in users from passwd
+    my @passwd = read_file( "/etc/passwd" );
+    my $dir    = '/var/cpanel/users';
+    my %user_list;
+
+    opendir( DIR, $dir ) or die $!;
+    while ( my $file = readdir( DIR ) ) {
+        next if ( $file =~ m/^\./ );
+        foreach my $line ( @passwd ) {
+
+            #if we look like a system and cpanel user?
+            if ( $line =~ /^$file:[^:]*:[^:]*:[^:]*:[^:]*:([a-z0-9_\/]+):.*/ ) {
+                $user_list{$file} = $1;
+            }
+        }
+    }
+    closedir( DIR );
+
+    #for the users found, if we aren't root look for an etc dir
+    foreach my $user ( keys %user_list ) {
+        if ( $user ne "root" ) {
+            opendir( ETC, "$user_list{$user}/etc" ) || warn $! . "$user_list{$user}/etc";
+            my $path = $user_list{$user};
+
+            #for the domains found in the users etc dir
+            while ( my $domain = readdir( ETC ) ) {
+                next if $domain =~ /^\./;   # skip . and .. dirs
+                                            #see if we are a valid etc domain and if so, look for mail users and print
+                if ( -d "$path/etc/$domain/" ) {
+                    open( PASSWD, "$path/etc/$domain/passwd" ) || die $! . "/home/$user/etc/$domain/passwd";
+                    while ( my $PWLINE = <PASSWD> ) {
+                        $PWLINE =~ s/:.*//;    # only show line data before first colon (username only)
+                        chomp( $user, $domain, $PWLINE );
+                        my $PWLINED = "$PWLINE\@$domain";
+                        chomp( $PWLINED );
+                        printf( "User=%-10s Domain=%-35s Email=%s\n", $user, $domain, $PWLINED );
+                    }
+                    close( PASSWD );
+                }
+            }
+        }
+        close( ETC );
+    } print "\n";
+}
