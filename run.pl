@@ -1,8 +1,12 @@
-#!/usr/bin/perl
+#!/bin/sh
 # cpanel				           Copyright(c) 2015 cPanel, Inc.
 #                                                           All rights Reserved.
 # copyright@cpanel.net                                         http://cpanel.net
 # This code is subject to the cPanel license. Unauthorized copying is prohibited
+eval 'if [ -x /usr/local/cpanel/3rdparty/bin/perl ]; then exec /usr/local/cpanel/3rdparty/bin/perl -x -- $0 ${1+"$@"}; else exec /usr/bin/perl -x $0 ${1+"$@"}; fi;'
+if 0;
+#!/usr/local/cpanel/3rdparty/bin/perl
+
 use MIME::Base64;
  
 #here's the base64 data for the script
@@ -166,7 +170,7 @@ my $decodedModule = decode_base64($base64modulesFileData);
 #create the module
 sub createModule {
       my $modfilename = 'DomainStatus.pm';
-      open(my $fh1, '>', $modfilename) or die "Could not open file '$filename' $!";
+      open(my $fh1, '>', $modfilename) or die "Could not open file '$fmodfilename' $!";
       print $fh1 "$decodedModule";
       close $fh1;
 }
@@ -174,7 +178,7 @@ sub createModule {
 #create the script 
 sub createScript {
      my $scriptfilename = 'domainstats.pl';
-     open(my $fh2, '>', $scriptfilename) or die "Could not open file '$filename' $!";
+     open(my $fh2, '>', $scriptfilename) or die "Could not open file '$scriptfilename' $!";
      print $fh2 "$decodedScript";
      close $fh2;
 }
