@@ -1,4 +1,4 @@
-#USAGE : perl <(curl -sL https://raw.githubusercontent.com/cpanelsky/PostMig/master/run.pl)
+#USAGE : perl <(curl -sL https://raw.githubusercontent.com/cpanelsky/PostMig/master/domainstats.pl)
 #or manually:
 #Download DomainStatus.pm module
 #Download actions script domainstats.pl
