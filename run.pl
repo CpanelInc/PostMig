@@ -1,10 +1,3 @@
-#!/bin/sh
-# cpanel				           Copyright(c) 2015 cPanel, Inc.
-#                                                           All rights Reserved.
-# copyright@cpanel.net                                         http://cpanel.net
-# This code is subject to the cPanel license. Unauthorized copying is prohibited
-eval 'if [ -x /usr/local/cpanel/3rdparty/bin/perl ]; then exec /usr/local/cpanel/3rdparty/bin/perl -x -- $0 ${1+"$@"}; else exec /usr/bin/perl -x $0 ${1+"$@"}; fi;'
-if 0;
 #!/usr/local/cpanel/3rdparty/bin/perl
 
 use MIME::Base64;
