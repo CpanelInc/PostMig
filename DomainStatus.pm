@@ -49,7 +49,7 @@ sub _get_http_status {
 
 #this is a subroutine for DNS checks
 sub _get_dns_data {
-    #i foudn this here, it worked!
+    #i found this here, it worked!
     use lib '/usr/local/cpanel/3rdparty/perl/514/lib64/perl5/cpanel_lib/';
     use IPC::System::Simple qw(system capture $EXITVAL);
     #colors again
