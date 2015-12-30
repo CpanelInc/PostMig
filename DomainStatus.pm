@@ -7,7 +7,7 @@
 package DomainStatus;
 use strict;
 use warnings;
-use File::Slup qw(read_file);
+use File::Slurp qw(read_file);
 our $VERSION = 0.02;
 
 #this is a subroutine to check the http status code for domains
@@ -50,7 +50,7 @@ sub _get_http_status {
 
 #this is a subroutine for DNS checks
 sub _get_dns_data {
-    #i found this here, it worked!
+    #I found this here, it worked!
     use lib '/usr/local/cpanel/3rdparty/perl/514/lib64/perl5/cpanel_lib/';
     use IPC::System::Simple qw(system capture $EXITVAL);
     #colors again
