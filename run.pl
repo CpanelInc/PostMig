@@ -192,17 +192,17 @@ sub pmCheck {
  
  #use previous files found or make new ones if none available
      if ( -f $moduleFile ) {
-     print "$moduleFile exists, using previous module.\n";
+     print "\n$moduleFile exists, using previous module.\n";
     } else {
      &createModule();
-     print "no $moduleFile found, created it.\n";
+     print "\nNo $moduleFile found, created it.\n";
      }
  
     if ( -f $scriptFile ) {
     print "$scriptFile exists, using previous script.\n";
     }  else {
     &createScript();
-    print "no $scriptFile found, craeted it.\n";
+    print "No $scriptFile found, created it.\n";
     }
 }
 
