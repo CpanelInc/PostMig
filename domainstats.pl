@@ -1,4 +1,8 @@
 #!/usr/local/cpanel/3rdparty/perl/514/bin/perl
+# cpanel				           Copyright(c) 2015 cPanel, Inc.
+#                                                           All rights Reserved.
+# copyright@cpanel.net                                         http://cpanel.net
+# This code is subject to the cPanel license. Unauthorized copying is prohibited
 use DomainStatus;
 use File::Slurp 'read_file';
 use File::Spec;
