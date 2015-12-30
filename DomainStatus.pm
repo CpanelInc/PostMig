@@ -7,6 +7,7 @@
 package DomainStatus;
 use strict;
 use warnings;
+use File::Slup qw(read_file);
 our $VERSION = 0.02;
 
 #this is a subroutine to check the http status code for domains
