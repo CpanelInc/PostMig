@@ -9,14 +9,56 @@ use threads;
 use threads::shared;
 use lib "/usr/local/cpanel/3rdparty/perl/514/lib64/perl5/cpanel_lib/";
 use File::Slurp qw(read_file);
+use Getopt::Long;
 
-
-
+# setup my defaults
+my $mail      = 0;
+my $ipdns     = 0;
+my $all       = 0;
+my $hosts     = 0;
+my $help      = 0;
 our $fileName = "/etc/userdatadomains";
 our @links    = read_file( $fileName );
-our $VERSION = 0.02;
+our $linkRef  = \@links;
+our $VERSION  = 0.02;
 
-&supressERR(\&get_data);
+
+
+GetOptions(
+    'mail'  => \$mail,
+    'ipdns' => \$ipdns,
+    'all' => \$all,
+    'hosts' => \$hosts,
+    'help!' => \$help
+     );
+
+if( $help ) {
+    print "\n   Options:
+     -help   -> This!
+     -ipdns  -> Check http status, IP's, DNS IP's
+     -hosts  -> Show suggested /etc/hosts file
+     -mail   -> Check for email accounts
+     -all    -> All the things!\n\n";
+} elsif ( $mail ) {
+  print "\n\n\tLets do some mail!\n\n";
+    &_get_mail_accounts();
+} elsif ( $ipdns )  {
+  print "\n\n\tLets do some ipdns!\n";
+    &supressERR(\&get_data);
+} elsif ( $all ) {
+  print "\n\tALL The Things!\n\n"; 
+    &supressERR(\&get_data);
+    &_gen_hosts_file();
+    &_get_mail_accounts();    
+} elsif ( $hosts ) {
+  print "\n\n\tThe hosts!!\n"; 
+    &_gen_hosts_file(); 
+} else {
+  print "\n\thWhhut?! try -help ;p\n\n";
+};
+
+
+
 
 #this calls the subs with params in forks
 sub get_data {
@@ -25,15 +67,14 @@ sub get_data {
     foreach my $uDomain ( @links ) {
         if ( $uDomain =~ /(.*):[\s]/ ) {
             our $resource = $1;
-	 my $thread1=threads->create(\&_get_http_status, "$resource");
-	 my $thread2=threads->create(\&_get_dns_data, "$resource");
+     my $thread1=threads->create(\&_get_http_status, "$resource");
+     my $thread2=threads->create(\&_get_dns_data, "$resource");
          $thread1->join();
-	 $thread2->join();
+     $thread2->join();
             } else {
             print YELLOW " Possible bad Domain data enountered, manually check /etc/userdatadomains file after finished.\n";
           }
      }
-   &_get_mail_accounts();
 }
 
 #this silences stderr
@@ -127,7 +168,7 @@ $SIG{'INT'} = sub{print "\nCaught CTRL+C!.."; print RESET " Ending..\n";exit;die
 }
 
 sub _get_mail_accounts {
-    print "\n\n\t::Mail accounts found::n\n";
+    print "\n\n\t::Mail accounts found::\n\n";
     use lib "/usr/local/cpanel/3rdparty/perl/514/lib64/perl5/cpanel_lib/";
     use File::Slurp qw(read_file);
     #read in users from passwd
@@ -153,17 +194,17 @@ sub _get_mail_accounts {
             my $path = $user_list{$user};
 
             #for the domains found in the users etc dir
-            while ( my $domain = readdir( ETC ) ) {
-                next if $domain =~ /^\./;   # skip . and .. dirs
+            while ( my $udomain = readdir( ETC ) ) {
+                next if $udomain =~ /^\./;   # skip . and .. dirs
                                             #see if we are a valid etc domain and if so, look for mail users and print
-                if ( -d "$path/etc/$domain/" ) {
-                    open( PASSWD, "$path/etc/$domain/passwd" ) || die $! . "/home/$user/etc/$domain/passwd";
+                if ( -d "$path/etc/$udomain/" ) {
+                    open( PASSWD, "$path/etc/$udomain/passwd" ) || die $! . "/home/$user/etc/$udomain/passwd";
                     while ( my $PWLINE = <PASSWD> ) {
                         $PWLINE =~ s/:.*//;    # only show line data before first colon (username only)
-                        chomp( $user, $domain, $PWLINE );
-                        my $PWLINED = "$PWLINE\@$domain";
+                        chomp( $user, $udomain, $PWLINE );
+                        my $PWLINED = "$PWLINE\@$udomain";
                         chomp( $PWLINED );
-                        printf( "User=%-10s Domain=%-35s Email=%s\n", $user, $domain, $PWLINED );
+                        printf( "User=%-10s Domain=%-35s Email=%s\n", $user, $udomain, $PWLINED );
                     }
                     close( PASSWD );
                 }
@@ -171,4 +212,16 @@ sub _get_mail_accounts {
         }
         close( ETC );
     } print "\n";
+}
+
+sub _gen_hosts_file {
+    print "\n\n\t::Hosts File::\n\n";
+    foreach my $hostDomain ( @{$linkRef} ) {
+         if ( $hostDomain =~ /==/ ) {
+         $hostDomain =~ s/:[\s]/==/g  ;
+         my ($newDomain,$userName,$userGroup,$domainStatus,$primaryDomain,$homeDir,$IPport) = split /==/, $hostDomain,9 ;
+         my ($IP) = split /:/, $IPport,2;
+         print "$IP\t\t$newDomain\twww.$newDomain\n";
+} else { next; }
+   }  print "\n";
 }
