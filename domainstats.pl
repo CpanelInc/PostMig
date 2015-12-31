@@ -21,7 +21,7 @@ our $VERSION = 0.02;
 #this calls the subs with params in forks
 sub get_data {
  $SIG{'INT'} = sub{print "\nCaught CTRL+C!.."; print RESET " Ending..\n";exit;die;kill HUP => -$$;}; 
-    print "\n\t___Checking HTTP response codes and DNS A records___\n\n\t(be patient..)\n\n";
+    print "\n\t::Checking HTTP response codes and DNS A records(be patient..)::\n\n";
     foreach my $uDomain ( @links ) {
         if ( $uDomain =~ /(.*):[\s]/ ) {
             our $resource = $1;
@@ -126,7 +126,7 @@ sub _get_dns_data {
 }
 
 sub _get_mail_accounts {
-    print "\n\n\t___Mail accounts found:___\n\n";
+    print "\n\n\t::Mail accounts found::n\n";
     use lib "/usr/local/cpanel/3rdparty/perl/514/lib64/perl5/cpanel_lib/";
     use File::Slurp qw(read_file);
     #read in users from passwd
