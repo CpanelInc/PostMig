@@ -30,7 +30,7 @@ sub get_data {
          $thread1->join();
 	 $thread2->join();
             } else {
-            print YELLOW "Possible bad Domain data enountered, manually check /etc/userdatadomains file after finished.\n";
+            print YELLOW " Possible bad Domain data enountered, manually check /etc/userdatadomains file after finished.\n";
           }
      }
    &_get_mail_accounts();
@@ -47,7 +47,7 @@ sub supressERR($) {
 
 #this is a subroutine to check the http status code for domains
 sub _get_http_status {
-
+ $SIG{'INT'} = sub{print "\nCaught CTRL+C!.."; print RESET " Ending..\n";exit;die;kill HUP => -$$;}; 
     #we use lwp/time/ansi for output/commands
     require LWP::UserAgent;
     require Time::HiRes;
@@ -72,17 +72,18 @@ sub _get_http_status {
     if ( $head =~ /Client-Peer:[\s](.*):([0-9].*)/ ) {
         my $head2 = "$1:$2";
         #here's some terrible formatting, needs improvement
-        printf("  %-30s PeerIP=%-15s Status=%s\r\n", $url, $head2, $bcode );
+        printf(" %-30s PeerIP=%-15s Status=%s\r\n", $url, $head2, $bcode );
     } else {
         #if we didn't see a normal header, let's print the code red with yellow warnings
-        my $rcode = ( RED $code );
-        my $error = BOLD YELLOW "ERROR:\t!!!HTTP Connect Failed : $url : $rcode!!!\n";
+        my $rcode = ( BOLD YELLOW $code );
+        my $error = BOLD RED " ERROR:\t!!!HTTP Connect Failed : $url : $rcode!!!\n";
         print "$error";
     }
 }
 
 #this is a subroutine for DNS checks
 sub _get_dns_data {
+$SIG{'INT'} = sub{print "\nCaught CTRL+C!.."; print RESET " Ending..\n";exit;die;kill HUP => -$$;}; 
     #I found this here, it worked!
     use lib '/usr/local/cpanel/3rdparty/perl/514/lib64/perl5/cpanel_lib/';
     use IPC::System::Simple qw(system capture $EXITVAL);
@@ -108,7 +109,7 @@ sub _get_dns_data {
     chomp( $googleDNS, $localhostDNS );
     #if the request is defined but doesn't match:
     if ( ( $localhostDNS ) && ( $localhostDNS ne $googleDNS ) ) {
-        my $IPM1      = BOLD YELLOW "WARN: Local IP:";
+        my $IPM1      = BOLD YELLOW " WARN: Local IP:";
         my $IPM2      = BOLD YELLOW " doesn't match remote DNS ";
         my $RlocalIP  = ( BOLD RED $localhostDNS );
         my $RgoogleIP = ( BOLD RED $googleDNS );
