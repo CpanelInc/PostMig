@@ -1,7 +1,5 @@
 #!/usr/local/cpanel/3rdparty/perl/514/bin/perl
 package DomainStatus;
-
-use File::Slurp 'read_file';
 use File::Spec;
 use strict;
 use warnings;
@@ -9,6 +7,10 @@ $Term::ANSIColor::AUTORESET = 1;
 use Term::ANSIColor qw(:constants);
 use threads;
 use threads::shared;
+use lib "/usr/local/cpanel/3rdparty/perl/514/lib64/perl5/cpanel_lib/";
+use File::Slurp qw(read_file);
+
+
 
 our $fileName = "/etc/userdatadomains";
 our @links    = read_file( $fileName );
