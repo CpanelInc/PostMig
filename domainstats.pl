@@ -1,8 +1,4 @@
 #!/usr/bin/perl
-# cpanel                                          Copyright(c) 2016 cPanel, Inc.
-#                                                           All rights Reserved.
-# copyright@cpanel.net                                         http://cpanel.net
-# This code is subject to the cPanel license. Unauthorized copying is prohibited
 package DomainStatus;
 use File::Spec;
 use strict;
@@ -42,27 +38,27 @@ if ( $help ) {
      -mail   -> Check for email accounts
      -all    -> All the things!\n\n";
 } elsif ( $mail ) {
-    print "\n\n\tLets do some mail!\n\n";
+    print "\n\n";
     &_get_mail_accounts();
 } elsif ( $ipdns ) {
-    print "\n\n\tLets do some ipdns!\n";
+    print "\n\n";
     &supressERR( \&get_data );
 } elsif ( $all ) {
-    print "\n\tALL The Things!\n\n";
+    print "\n\n";
     &supressERR( \&get_data );
     &_gen_hosts_file();
     &_get_mail_accounts();
 } elsif ( $hosts ) {
-    print "\n\n\tThe hosts!!\n";
+    print "\n";
     &_gen_hosts_file();
 } elsif ( $jsons ) {
-    print "\njsons!\n\n";
+    print "\n";
     &_make_json_data();
 } else {
     print "\n\thWhhut?! try -help ;p\n\n";
 }
 
-#this calls the subs with params in threads
+#this calls the subs with params in forks
 sub get_data {
     $SIG{'INT'} = sub { print "\nCaught CTRL+C!.."; print RESET " Ending..\n"; exit; die; kill HUP => -$$; };
     print "\n\t::Checking HTTP response codes and DNS A records(be patient..)::\n\n";
@@ -258,53 +254,59 @@ sub _make_json_data {
     foreach my $jDomain ( @{$linkRef} ) {
         if ( $jDomain =~ /(.*):[\s]/ ) {
             my $url2 = $1;
-
-            #we have a basic browser agent and a low timeout for now, here's the request for the URL
             my $ua = LWP::UserAgent->new( agent => 'Mozilla/5.0', timeout => '1' );
             my $req   = HTTP::Request->new( GET => "http://$url2" );
-            my $reqIP = 0;
+            my $reqIP = "NULL";
             my $res2  = $ua->request( $req );
-
-            #we can parse this for goodies/errors
             my $body2 = $res2->decoded_content;
-
-            #this is the status code
             my $code2 = $res2->code();
-
-            #we can easily check the headers to determine if we had a good request as below
             my $head3 = $res2->headers()->as_string;
             print $res2->header( "content-type\r\n\r\n" );
             if ( $head3 =~ /Client-Peer:[\s](.*):([0-9].*)/ ) {
                 $reqIP = "$1:$2";
             } else {
-
-                #if we didn't see a normal header, let's print the code red with yellow warnings
-                my $error2 = BOLD RED " ERROR:\t!!!HTTP Connect Failed : $url2 !!\n";
-                print "$error2";
+                $reqIP = "NULL";
+                $code2 = "NULL";
             }
-            my ( $domain, $status ) = ( $url2, $code2 );
-
-            sub new {
+           my ( $domain, $status ) = ( $url2, $code2 );
+           my $googleH = "localhost";
+           my $cmd2        = "dig";
+           my @localArgs2  = ( "\@localhost", "$domain", "A", "+short", "+tries=1" );
+           my @googleArgs2 = ( "\@$googleH", "$domain", "A", "+short", "+tries=1" );
+           my @googleDNSA2 = capture( $cmd2, @googleArgs2 );
+     	   my $googleDNSR2    = \@googleDNSA2;
+     	   my $googleDNS2    = $googleDNSR2->[0];
+     	   my @localhostDNSA2 = capture( $cmd2, @localArgs2 );
+     	   my $localhostDNSR2 = \@localhostDNSA2;
+     	   my $localhostDNS2  = $localhostDNSR2->[0];
+     	   chomp( $googleDNS2, $localhostDNS2 );
+            if ( ( $localhostDNS2 ) && ( $localhostDNS2 ne $googleDNS2 ) ) {
+            $googleDNS2 = "mismatch"
+            } else {
+ 
+            sub jsons{
 
                 my $class = shift;
-                my $self = { Domain => shift,
-                             IP     => shift,
-                             Status => shift, };
+                my $self = { 
+			     Domain     => shift,
+                             IP         => shift,
+                             httpStatus => shift,
+                             LocalDNS   => shift,
+                             GoogleDNS  => shift
+			   };
                 bless $self, $class;
                 return $self;
             }
 
             sub TO_JSON { return { %{ shift() } }; }
-
             package main;
             use JSON;
-
             my $JSON = JSON->new->utf8;
             $JSON->convert_blessed( 1 );
-
-            my $e = new DomainStatus( "$domain", "$reqIP", "$status" );
+            my $e = jsons DomainStatus( "$domain", "$reqIP", "$status", "$localhostDNS2", "$googleDNS2");
             my $json = $JSON->encode( $e );
             print "$json\n";
         }
-    }
+    } 
+  } print "\n";
 }
