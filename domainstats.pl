@@ -62,7 +62,7 @@ if ( $help ) {
     print "\n\thWhhut?! try -help ;p\n\n";
 }
 
-#this calls the subs with params in forks
+#this calls the subs with params in threads
 sub get_data {
     $SIG{'INT'} = sub { print "\nCaught CTRL+C!.."; print RESET " Ending..\n"; exit; die; kill HUP => -$$; };
     print "\n\t::Checking HTTP response codes and DNS A records(be patient..)::\n\n";
