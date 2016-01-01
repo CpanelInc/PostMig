@@ -1,4 +1,8 @@
 #!/usr/bin/perl
+# cpanel				           Copyright(c) 2016 cPanel, Inc.
+#                                                           All rights Reserved.
+# copyright@cpanel.net                                         http://cpanel.net
+# This code is subject to the cPanel license. Unauthorized copying is prohibited
 package DomainStatus;
 use File::Spec;
 use strict;
